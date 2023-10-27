@@ -20,7 +20,7 @@ loc = np.where(res >= threshold)
 # Iterate over the locations and draw a bounding box around the found templates
 for pt in zip(*loc[::-1]):
     bottom_right = (pt[0] + template_width, pt[1] + template_height)
-    cv2.rectangle(main_image, pt, bottom_right, (0, 0, 255), 2)  # Red rectangle
+    cv2.rectangle(main_image, pt, bottom_right, (255, 0, 0), 2)  # Red rectangle
 
 # Save or display the result
 cv2.imwrite("result_image.jpg", main_image)
