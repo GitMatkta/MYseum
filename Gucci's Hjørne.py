@@ -3,31 +3,47 @@ import numpy as np
 
 input_image = cv2.imread(r"C:\Users\Tze Huo Gucci Ho\Desktop\Git Projects\MYseum\IRL\Girl with da perl training data.jpg")
 
-mask = np.zeros(input_image.shape[:2], np.uint8)
+gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
 
-rect = (50, 50, input_image.shape[1] - 100, input_image.shape[0] - 100)
+_, thresholded = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY)
 
-cv2.grabCut(input_image, mask, rect, None, None, 5, cv2.GC_INIT_WITH_RECT)
+contours, _ = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+largest_contour = max(contours, key=cv2.contourArea)
 
-gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+mask = np.zeros_like(input_image)
+cv2.drawContours(mask, [largest_contour], 0, (255, 255, 255), -1)
 
-sobel_x = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
+cropped_background = cv2.bitwise_and(input_image, mask)
 
-sobel_y = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
+# Define the color range for the frame (adjust the values as needed)
+lower_white = np.array([211, 211, 211], dtype=np.uint8)
+upper_white = np.array([255, 255, 255], dtype=np.uint8)
 
-edge_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
+# Create a mask for the white frame in the cropped_background
+frame_mask = cv2.inRange(cropped_background, lower_white, upper_white)
 
-edge_image = np.uint8(edge_magnitude)
+# Find contours in the mask
+contours, _ = cv2.findContours(frame_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-result = edge_image * mask2
+# Find the largest contour (the frame)
+largest_contour = max(contours, key=cv2.contourArea)
 
-contours, _ = cv2.findContours(result, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# Create a mask for the frame
+frame_mask = np.zeros_like(cropped_background)
+cv2.drawContours(frame_mask, [largest_contour], 0, (255, 255, 255), -1)
 
-result_image = input_image.copy()
-cv2.drawContours(result_image, contours, -1, (0, 255, 0), 2)
+# Invert the frame mask
+frame_mask_inv = cv2.bitwise_not(frame_mask)
 
-cv2.imshow("Result", result_image)
+# Remove the frame from the cropped_background
+image_without_frame = cv2.bitwise_and(cropped_background, frame_mask_inv)
+
+# Perform noise reduction and remove thin pixel lines
+kernel = np.ones((5, 5), np.uint8)
+
+noise_reduced_image = cv2.morphologyEx(image_without_frame, cv2.MORPH_OPEN, kernel)
+
+cv2.imshow("Cleaned Image", noise_reduced_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
