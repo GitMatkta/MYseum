@@ -2,6 +2,11 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
+test = cv2.imread(r'100 Billeder cirka\Babel 1.jpg')
+test2 = cv2.resize(test, (360, 800))
+cv2.imshow("test", test2)
+cv2.waitKey(0)
+
 # Load reference painting and wall photo
 reference_painting = cv2.imread(r'Malerier\Girl_with_a_Pearl_Earring.jpg')
 wall_photo = cv2.imread(r'IRL\Girl with da perl training data.jpg')
