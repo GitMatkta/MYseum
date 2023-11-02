@@ -1,41 +1,44 @@
 import cv2
+import numpy as np
 
-
-# Function to find and outline rectangular objects in an image
-def find_and_outline_object(image_path):
-    # Read the input image
+def split_image_into_matrix(image_path, rows=10, cols=10):
     image = cv2.imread(image_path)
+    if image is None:
+        print(f"Error: Could not open or find the image at {image_path}.")
+        return None
 
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Resize the image to a size divisible by rows and cols
+    height, width, _ = image.shape
+    cell_height = height // rows
+    cell_width = width // cols
+    image = cv2.resize(image, (cell_width * cols, cell_height * rows))
 
-    # Use a rectangle detection algorithm (such as contour detection) to find the rectangular object
-    contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    hsv_values = []
 
-    # Loop through the contours and find the rectangular object
-    for contour in contours:
-        approx = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+    for i in range(rows):
+        row_values = []
+        for j in range(cols):
+            cell = image[i * cell_height:(i + 1) * cell_height, j * cell_width:(j + 1) * cell_width]
+            hsv_cell = cv2.cvtColor(cell, cv2.COLOR_BGR2HSV)
+            average_hsv = np.mean(hsv_cell, axis=(0, 1))
+            row_values.append(average_hsv)
+        hsv_values.append(row_values)
 
-        # If the object has four vertices, it's likely a rectangle
-        if len(approx) == 4:
-            # Draw a green outline around the rectangular object
-            cv2.drawContours(image, [approx], 0, (0, 255, 0), 2)
+    return hsv_values
 
-            # Extract and process the rectangular object
-            x, y, w, h = cv2.boundingRect(approx)
-            object_roi = image[y:y + h, x:x + w]
+if __name__ == "__main__":
+    # First image
+    image_path1 = r"C:\University\P3\Project\MYseum\100 Billeder cirka\Pearl Earring 1.jpg"
+    hsv_values1 = split_image_into_matrix(image_path1)
 
-            # Implement your logic to analyze the object_roi here
-            # For example, you can perform further image processing or use a machine learning model
+    # Second image
+    image_path2 = r"C:\University\P3\Project\MYseum\Malerier\Girl_with_a_Pearl_Earring.jpg"
+    hsv_values2 = split_image_into_matrix(image_path2)
 
-            # Display the outlined object
-            cv2.imshow("Outlined Object", image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
-
-# Path to the input image
-image_path = r"C:\University\P3\Project\MYseum\IRL\Girl with da perl training data.jpg"
-
-# Call the function to find and outline the object in the image
-find_and_outline_object(image_path)
+    if hsv_values1 and hsv_values2:
+        print("Average HSV values for each cell in the 10x10 grid (Image 1):")
+        print(hsv_values1)
+        print("Average HSV values for each cell in the 10x10 grid (Image 2):")
+        print(hsv_values2)
+    else:
+        print("Error occurred during image processing.")

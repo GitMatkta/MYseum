@@ -8,8 +8,8 @@ cv2.imshow("test", test2)
 cv2.waitKey(0)
 
 # Load reference painting and wall photo
-reference_painting = cv2.imread(r'Malerier\Girl_with_a_Pearl_Earring.jpg')
-wall_photo = cv2.imread(r'IRL\Girl with da perl training data.jpg')
+reference_painting = cv2.imread(r'100 Billeder cirka\Pearl Earring 1.jpg')
+wall_photo = cv2.imread(r'100 Billeder cirka\Pearl Earring 1.jpg')
 
 # Billedet, men i HSV
 imageHSV = cv2.cvtColor(wall_photo, cv2.COLOR_BGR2HSV)
@@ -52,7 +52,8 @@ for contour in contours:
         cv2.imshow('Matched Painting', matched_painting)
         cv2.waitKey(0)
 
+wall_photo_resized = cv2.resize(wall_photo, (360, 800))
 # Display the results with potential paintings and their matches
-cv2.imshow('Contours Detection Result', wall_photo)
+cv2.imshow('Contours Detection Result', wall_photo_resized)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

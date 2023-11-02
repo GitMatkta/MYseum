@@ -1,33 +1,55 @@
 import cv2
 import numpy as np
 
-input_image = cv2.imread(r"C:\Users\Tze Huo Gucci Ho\Desktop\Git Projects\MYseum\IRL\Girl with da perl training data.jpg")
+# Load an image from your file system
+image_path = cv2.imread(r'C:\Users\Tze Huo Gucci Ho\Desktop\Git Projects\MYseum\100 Billeder cirka\Almond Blossoms 8.jpg')
+image = cv2.resize(image_path, (595, 842))
 
-mask = np.zeros(input_image.shape[:2], np.uint8)
+# Load a reference image
+reference_image = cv2.imread(r'C:\Users\Tze Huo Gucci Ho\Desktop\Git Projects\MYseum\Malerier\Almond Blossoms.jpg')
 
-rect = (50, 50, input_image.shape[1] - 100, input_image.shape[0] - 100)
+# Convert the image to grayscale (required for edge detection)
+gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-cv2.grabCut(input_image, mask, rect, None, None, 5, cv2.GC_INIT_WITH_RECT)
+# Apply edge detection using the Canny algorithm
+edges = cv2.Canny(gray_image, threshold1=340, threshold2=800)  # You can adjust the thresholds
 
-mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+# Find contours in the edge-detected image
+contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+# Find the largest contour (assumed to be the frame)
+if contours:
+    largest_contour = max(contours, key=cv2.contourArea)
 
-sobel_x = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
+    # Get the orientation angle of the largest contour
+    rect = cv2.minAreaRect(largest_contour)
+    angle = rect[-1]
 
-sobel_y = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
+    # Get the bounding box of the largest contour
+    x, y, w, h = cv2.boundingRect(largest_contour)
 
-edge_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
+    # Find the four corners of the bounding box
+    corners = np.array([[x, y], [x + w, y], [x, y + h], [x + w, y + h]], dtype='float32')
 
-edge_image = np.uint8(edge_magnitude)
+    # Define the target corners for the rectified image (a rectangle)
+    target_corners = np.array([[0, 0], [w, 0], [0, h], [w, h]], dtype='float32')
 
-result = edge_image * mask2
+    # Compute the perspective transformation matrix (homography)
+    M = cv2.getPerspectiveTransform(corners, target_corners)
 
-contours, _ = cv2.findContours(result, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Apply the perspective transformation to rectify the image
+    rectified_image = cv2.warpPerspective(image, M, (w, h))
 
-result_image = input_image.copy()
-cv2.drawContours(result_image, contours, -1, (0, 255, 0), 2)
+    # Rotate the rectified image to make it horizontal
+    if angle < -45:
+        angle += 90
+    rotated_rectified_image = cv2.warpAffine(rectified_image, cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1), (w, h))
 
-cv2.imshow("Result", result_image)
+    # Display the rotated and rectified image
+    cv2.imshow("Rotated and Rectified Image", rotated_rectified_image)
+else:
+    print("No contour found")
+
+# Wait for a key press and then close the window
 cv2.waitKey(0)
 cv2.destroyAllWindows()
