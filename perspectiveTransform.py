@@ -16,7 +16,7 @@ class RoiHandler:
 
 
 def load_image(image_file_number):
-    image = cv2.imread(r'C:\Users\nicol\Documents\GitHub\MYseum\IRL\Girl with da perl training data.jpg')
+    image = cv2.imread(r'C:\Users\nicol\Documents\GitHub\MYseum\100 Billeder cirka\Monet Bridge 1.jpg')
     image_small = cv2.resize(image, (595, 842))
     return image, image_small
 
@@ -26,7 +26,7 @@ image_file_number = 0
 image, image_small = load_image(image_file_number)
 
 roi = RoiHandler()
-dst_points = np.array(((0, 0), (500, 0), (500, 500), (0, 500)))
+dst_points = np.array(((0, 0), (595, 0), (595, 842), (0, 842)))
 
 output_file_number = 1
 
@@ -43,7 +43,8 @@ while True:
     elif len(roi.points) == 4 and key == 32:  # Space
         src_points = np.array([(x*5, y*5) for x, y in roi.points])
         transform, _ = cv2.findHomography(src_points, dst_points)
-        adjusted_image = cv2.warpPerspective(image, transform, (500, 500))
+        adjusted_image = cv2.warpPerspective(image, transform, (595, 842))
+
         filename = f"{output_file_number}.jpg"
         cv2.imwrite(filename, adjusted_image)
         print(f"Saved {filename}.")
