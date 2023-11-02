@@ -2,82 +2,57 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-image = cv2.imread(r"C:\Users\jakob\Desktop\Git Things\MYseum\IRL\Girl with da perl training data.jpg")
-imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+test = cv2.imread(r'100 Billeder cirka\Babel 1.jpg')
+test2 = cv2.resize(test, (360, 800))
+cv2.imshow("test", test2)
+cv2.waitKey(0)
 
-# Apply thresholding to separate the painting from the paper
-_, thresh = cv2.threshold(imageGray, 200, 255, cv2.THRESH_BINARY)
+# Load reference painting and wall photo
+reference_painting = cv2.imread(r'Malerier\Girl_with_a_Pearl_Earring.jpg')
+wall_photo = cv2.imread(r'IRL\Girl with da perl training data.jpg')
 
-# Find contours in the thresholded image
-contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# Billedet, men i HSV
+imageHSV = cv2.cvtColor(wall_photo, cv2.COLOR_BGR2HSV)
+cv2.imshow("HSV", imageHSV)
+cv2.waitKey(0)
 
-# Filter out small contours (you may need to adjust the size threshold)
-min_contour_size = 10
-filtered_contours = [c for c in contours if cv2.contourArea(c) > min_contour_size]
+# Convert images to grayscale
+reference_gray = cv2.cvtColor(reference_painting, cv2.COLOR_BGR2GRAY)
+wall_gray = cv2.cvtColor(wall_photo, cv2.COLOR_BGR2GRAY)
 
-# Initialize a list to store potential paintings
-potential_paintings = []
+# Apply adaptive thresholding to wall photo
+binary_wall = cv2.adaptiveThreshold(wall_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+cv2.imshow("Binary Wall", binary_wall)
+cv2.waitKey(0)
 
-# Iterate over the filtered contours and create bounding boxes
-for contour in filtered_contours:
+# Perform contour detection
+contours, _ = cv2.findContours(binary_wall, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# Filter Contours based on Aspect Ratio and Area
+filtered_contours = []
+for contour in contours:
     x, y, w, h = cv2.boundingRect(contour)
-    potential_paintings.append((x, y, w, h))
+    aspect_ratio = float(w) / h
+    area = cv2.contourArea(contour)
 
-# Filter out small bounding boxes based on a threshold
-min_painting_area = 10  # Adjust this threshold as needed
-potential_paintings = [p for p in potential_paintings if p[2] * p[3] > min_painting_area]
+    # Adjust aspect_ratio and area thresholds based on your specific case
+    if 0.6 < aspect_ratio < 1.4 and 5000 < area < 50000:
+        filtered_contours.append(contour)
+        cv2.rectangle(wall_photo, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangles around potential paintings
+        cv2.putText(wall_photo, 'Potential Painting', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-# Now, analyze the content of the remaining potential paintings to identify the actual paintings
+        # Extract potential painting ROI
+        potential_painting_roi = wall_gray[y:y+h, x:x+w]
 
-# For example, you can use color histogram analysis or other image features to distinguish paintings from the background.
+        # Perform histogram matching between potential_painting_roi and reference_gray
+        matched_painting = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(potential_painting_roi)
+        matched_painting = cv2.cvtColor(matched_painting, cv2.COLOR_GRAY2BGR)  # Convert back to BGR for visualization
 
-# Load your training image
-training_image = cv2.imread(r"Malerier\Girl_with_a_Pearl_Earring.jpg")
+        # Display the matched painting
+        cv2.imshow('Matched Painting', matched_painting)
+        cv2.waitKey(0)
 
-# Convert the image to the RGB color space (assuming it's in BGR)
-training_image_rgb = cv2.cvtColor(training_image, cv2.COLOR_BGR2RGB)
-
-# Separate the channels
-r, g, b = cv2.split(training_image_rgb)
-
-# Create histograms for each channel
-hist_r = cv2.calcHist([r], [0], None, [256], [0, 256])
-hist_g = cv2.calcHist([g], [0], None, [256], [0, 256])
-hist_b = cv2.calcHist([b], [0], None, [256], [0, 256])
-
-# Plot the histograms using Matplotlib
-plt.figure()
-plt.title("Color Histogram")
-plt.xlabel("Color Value")
-plt.ylabel("Pixel Count")
-plt.plot(hist_r, color='red', label='Red Channel')
-plt.plot(hist_g, color='green', label='Green Channel')
-plt.plot(hist_b, color='blue', label='Blue Channel')
-plt.xlim([0, 256])
-plt.legend()
-plt.show()
-
-# Once you've identified the actual paintings, you can draw bounding boxes around them and display the result.
-
-# Display the result
-for x, y, w, h in potential_paintings:
-    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-# Display the result
-#cv2.imshow('Detected Painting', image)
+# Display the results with potential paintings and their matches
+cv2.imshow('Contours Detection Result', wall_photo)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-print("prut")
-
-# Grayscale histogram
-# histogram = cv2.calcHist([imageGray], [0], None, [256], [0, 256])
-# plt.figure()
-# plt.axis("off")
-# plt.figure()
-# plt.title("Grayscale Histogram")
-# plt.xlabel("Bins")
-# plt.ylabel("# of Pixels")
-# plt.plot(histogram)
-# plt.xlim([0, 256])
-# plt.show()
