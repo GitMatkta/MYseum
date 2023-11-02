@@ -3,15 +3,18 @@ import numpy as np
 
 # Load the image
 image = cv2.imread(r'100 Billeder cirka\Almond Blossoms 1.jpg')
+imageHSV = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
 # Convert the image to grayscale
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+gray = cv2.cvtColor(imageHSV, cv2.COLOR_BGR2GRAY)
 
 # Apply histogram equalization to enhance contrast
 equalized = cv2.equalizeHist(gray)
 
+blurred = cv2.GaussianBlur(equalized, (5, 5), 0)
+
 # Apply Canny edge detection with adjusted threshold values
-edges = cv2.Canny(equalized, 50, 150)  # You may need to adjust the threshold values
+edges = cv2.Canny(equalized, 20, 100)  # You may need to adjust the threshold values
 
 # Find contours in the edge-detected image
 contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -29,8 +32,8 @@ for contour in contours:
     # Adjust aspect_ratio and area thresholds based on your specific case
     if 0.6 < aspect_ratio < 1.4 and 5000 < area < 50000:
         filtered_contours2.append(contour)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangles around potential paintings
-        cv2.putText(image, 'Potential Painting', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.rectangle(imageHSV, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangles around potential paintings
+        cv2.putText(imageHSV, 'Potential Painting', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
         # Extract potential painting ROI
         potential_painting_roi = gray[y:y+h, x:x+w]
@@ -50,7 +53,7 @@ for contour in contours:
 # Display the result with detected edges
 edges2 = cv2.resize(edges, (360, 800))
 cv2.imshow('Edge Detection Result', edges2)
-contourImage = cv2.resize(image, (360, 800))
+contourImage = cv2.resize(imageHSV, (360, 800))
 cv2.imshow('Contours Detection Result', contourImage)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
