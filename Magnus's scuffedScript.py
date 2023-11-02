@@ -1,41 +1,44 @@
 import cv2
 
+# Load reference painting and wall photo
+reference_painting = cv2.imread(r'C:\University\P3\Project\MYseum\Malerier\Girl_with_a_Pearl_Earring.jpg')
+wall_photo = cv2.imread(r'C:\University\P3\Project\MYseum\IRL\Girl with da perl training data.jpg')
 
-# Function to find and outline rectangular objects in an image
-def find_and_outline_object(image_path):
-    # Read the input image
-    image = cv2.imread(image_path)
+# Convert images to grayscale
+reference_gray = cv2.cvtColor(reference_painting, cv2.COLOR_BGR2GRAY)
+wall_gray = cv2.cvtColor(wall_photo, cv2.COLOR_BGR2GRAY)
 
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# Apply adaptive thresholding to wall photo
+binary_wall = cv2.adaptiveThreshold(wall_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
-    # Use a rectangle detection algorithm (such as contour detection) to find the rectangular object
-    contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# Perform contour detection
+contours, _ = cv2.findContours(binary_wall, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Loop through the contours and find the rectangular object
-    for contour in contours:
-        approx = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+# Filter Contours based on Aspect Ratio and Area
+filtered_contours = []
+for contour in contours:
+    x, y, w, h = cv2.boundingRect(contour)
+    aspect_ratio = float(w) / h
+    area = cv2.contourArea(contour)
 
-        # If the object has four vertices, it's likely a rectangle
-        if len(approx) == 4:
-            # Draw a green outline around the rectangular object
-            cv2.drawContours(image, [approx], 0, (0, 255, 0), 2)
+    # Adjust aspect_ratio and area thresholds based on your specific case
+    if 0.6 < aspect_ratio < 1.4 and 5000 < area < 50000:
+        filtered_contours.append(contour)
+        cv2.rectangle(wall_photo, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangles around potential paintings
+        cv2.putText(wall_photo, 'Potential Painting', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            # Extract and process the rectangular object
-            x, y, w, h = cv2.boundingRect(approx)
-            object_roi = image[y:y + h, x:x + w]
+        # Extract potential painting ROI
+        potential_painting_roi = wall_gray[y:y+h, x:x+w]
 
-            # Implement your logic to analyze the object_roi here
-            # For example, you can perform further image processing or use a machine learning model
+        # Perform histogram matching between potential_painting_roi and reference_gray
+        matched_painting = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(potential_painting_roi)
+        matched_painting = cv2.cvtColor(matched_painting, cv2.COLOR_GRAY2BGR)  # Convert back to BGR for visualization
 
-            # Display the outlined object
-            cv2.imshow("Outlined Object", image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+        # Display the matched painting
+        cv2.imshow('Matched Painting', matched_painting)
+        cv2.waitKey(0)
 
-
-# Path to the input image
-image_path = r"C:\University\P3\Project\MYseum\IRL\Girl with da perl training data.jpg"
-
-# Call the function to find and outline the object in the image
-find_and_outline_object(image_path)
+# Display the results with potential paintings and their matches
+cv2.imshow('Contours Detection Result', wall_photo)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
