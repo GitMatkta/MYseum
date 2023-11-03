@@ -28,17 +28,28 @@ def split_image_into_matrix(image_path, rows=10, cols=10):
 
 if __name__ == "__main__":
     # First image
-    image_path1 = r"C:\University\P3\Project\MYseum\100 Billeder cirka\Pearl Earring 1.jpg"
+    image_path1 = "100 Billeder cirka\Pearl Earring 1.jpg"
     hsv_values1 = split_image_into_matrix(image_path1)
 
     # Second image
-    image_path2 = r"C:\University\P3\Project\MYseum\Malerier\Girl_with_a_Pearl_Earring.jpg"
+    image_path2 = "Malerier\Girl_with_a_Pearl_Earring.jpg"
     hsv_values2 = split_image_into_matrix(image_path2)
 
     if hsv_values1 and hsv_values2:
-        print("Average HSV values for each cell in the 10x10 grid (Image 1):")
-        print(hsv_values1)
-        print("Average HSV values for each cell in the 10x10 grid (Image 2):")
-        print(hsv_values2)
+        # Flatten the matrices for NCC calculation
+        flat_hsv_values1 = np.array(hsv_values1).flatten()
+        flat_hsv_values2 = np.array(hsv_values2).flatten()
+
+        # Calculate mean for normalization
+        mean_hsv_values1 = np.mean(flat_hsv_values1)
+        mean_hsv_values2 = np.mean(flat_hsv_values2)
+
+        # Calculate Normalized Cross-Correlation
+        ncc = np.sum((flat_hsv_values1 - mean_hsv_values1) * (flat_hsv_values2 - mean_hsv_values2)) / \
+              (np.sqrt(np.sum((flat_hsv_values1 - mean_hsv_values1) ** 2) * np.sum((flat_hsv_values2 - mean_hsv_values2) ** 2)))
+
+        similarity_percentage = (ncc + 1) * 50  # Convert NCC to percentage of similarity (ranges from -1 to 1)
+
+        print("Similarity between the two images: {:.2f}%".format(similarity_percentage))
     else:
         print("Error occurred during image processing.")
