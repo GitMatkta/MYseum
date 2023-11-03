@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 def split_image_into_matrix(image_path, rows=10, cols=10):
     image = cv2.imread(image_path)
     if image is None:
