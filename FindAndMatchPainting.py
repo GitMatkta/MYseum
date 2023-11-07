@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+irl_path = r"100 Billeder cirka\Almond Blossoms 8.jpg"
+reference_path = r"Malerier\Almond Blossoms.jpg"
 
 def split_image_into_matrix(image_path, rows=10, cols=10):
     image = cv2.imread(image_path)
@@ -29,11 +31,11 @@ def split_image_into_matrix(image_path, rows=10, cols=10):
 
 if __name__ == "__main__":
     # First image
-    image_path1 = r"100 Billeder cirka\Almond Blossoms 8.jpg"
+    image_path1 = irl_path
     hsv_values1 = split_image_into_matrix(image_path1)
 
     # Second image
-    image_path2 = r"Malerier\Almond Blossoms.jpg"
+    image_path2 = reference_path
     hsv_values2 = split_image_into_matrix(image_path2)
 
     if hsv_values1 and hsv_values2:
@@ -59,11 +61,11 @@ if __name__ == "__main__":
 # Section 1: Load and Preprocess the Image
 
 # Load an image from your file system
-image_path = cv2.imread(r'100 Billeder cirka\Almond Blossoms 8.jpg')
+image_path = cv2.imread(irl_path)
 image = cv2.resize(image_path, (595, 842))
 
 # Load a reference image
-reference_image = cv2.imread(r'Malerier\Almond Blossoms.jpg')
+reference_image = cv2.imread(reference_path)
 
 # Convert the image to grayscale (required for edge detection)
 gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
