@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
+import os
 
     # Path to the images
-irl_path = r"100 Billeder cirka\Babel 3.jpg"
-reference_path = r"Malerier\Woman_with_a_Parasol_-_Madame_Monet_and_Her_Son - Claude_Monet.jpg"
+irl_path = r"100 Billeder cirka\Pearl Earring 1.jpg"
+reference_folder = r"Malerier"
 
     # Function to split an image into a matrix of average HSV values
 def split_image_into_matrix(image_path, rows=10, cols=10):
@@ -50,35 +51,38 @@ def split_image_into_matrix(image_path, rows=10, cols=10):
     return hsv_values
 
 if __name__ == "__main__":
-
-        # Load the image and run the function to split the images into matrices of average HSV values.
+    # Load the irl_path image and run the function to split the image into matrices of average HSV values
     image_path1 = irl_path
     hsv_values1 = split_image_into_matrix(image_path1)
-    image_path2 = reference_path
-    hsv_values2 = split_image_into_matrix(image_path2)
 
-        # Check if the function returned valid data.
-    if hsv_values1 and hsv_values2:
-            # Flatten the matrices for NCC calculation.
-            # Flatten converts a matrix into a 1D array.
-        flat_hsv_values1 = np.array(hsv_values1).flatten()
-        flat_hsv_values2 = np.array(hsv_values2).flatten()
+    # Get a list of image files in the "Malerier" folder
+    reference_files = [os.path.join(reference_folder, file) for file in os.listdir(reference_folder) if file.endswith(".jpg")]
 
-            # Calculate mean for normalization.
-        mean_hsv_values1 = np.mean(flat_hsv_values1)
-        mean_hsv_values2 = np.mean(flat_hsv_values2)
+    for reference_path in reference_files:
+        # Load the reference image and run the function to split the image into matrices of average HSV values
+        image_path2 = reference_path
+        hsv_values2 = split_image_into_matrix(image_path2)
 
-            # Calculate Normalized Cross-Correlation.
-            # NCC is a measure of similarity between two images.
-        ncc = np.sum((flat_hsv_values1 - mean_hsv_values1) * (flat_hsv_values2 - mean_hsv_values2)) / \
-              (np.sqrt(np.sum((flat_hsv_values1 - mean_hsv_values1) ** 2) * np.sum((flat_hsv_values2 - mean_hsv_values2) ** 2)))
+        # Check if the function returned valid data for both images
+        if hsv_values1 and hsv_values2:
+            # Flatten the matrices for NCC calculation
+            flat_hsv_values1 = np.array(hsv_values1).flatten()
+            flat_hsv_values2 = np.array(hsv_values2).flatten()
 
-            # Convert NCC to percentage of similarity (ranges from -1 to 1).
-        similarity_percentage = (ncc + 1) * 50
+            # Calculate mean for normalization
+            mean_hsv_values1 = np.mean(flat_hsv_values1)
+            mean_hsv_values2 = np.mean(flat_hsv_values2)
 
-        print("Similarity between the two images: {:.2f}%".format(similarity_percentage))
-    else:
-        print("Error occurred during image processing.")
+            # Calculate Normalized Cross-Correlation (NCC)
+            ncc = np.sum((flat_hsv_values1 - mean_hsv_values1) * (flat_hsv_values2 - mean_hsv_values2) /
+                         (np.sqrt(np.sum((flat_hsv_values1 - mean_hsv_values1) ** 2) * np.sum((flat_hsv_values2 - mean_hsv_values2) ** 2))))
+
+            # Convert NCC to percentage of similarity (ranges from -1 to 1)
+            similarity_percentage = (ncc + 1) * 50
+
+            print(f"Similarity between {irl_path} and {reference_path}: {similarity_percentage:.2f}%")
+        else:
+            print("Error occurred during image processing for either the input or reference image.")
 
     # Initialize the irl_path image.
 image_path = cv2.imread(irl_path)
