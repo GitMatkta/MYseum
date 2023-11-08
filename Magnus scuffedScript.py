@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-irl_path = r"100 Billeder cirka\Almond Blossoms 8.jpg"
-reference_path = r"Malerier\Almond Blossoms.jpg"
+irl_path = r"100 Billeder cirka\Almond Blossoms 1.jpg"
+reference_path = r"Malerier\Woman_with_a_Parasol_-_Madame_Monet_and_Her_Son - Claude_Monet.jpg"
 
 def split_image_into_matrix(image_path, rows=10, cols=10):
     image = cv2.imread(image_path)
