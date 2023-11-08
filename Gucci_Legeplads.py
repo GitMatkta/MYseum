@@ -3,7 +3,7 @@ import numpy as np
 import os
 
     # Path to the images
-irl_path = r"100 Billeder cirka\Pearl Earring 1.jpg"
+irl_path = r"100 Billeder cirka\Almond Blossoms 8.jpg"
 reference_folder = r"Malerier"
 
     # Function to split an image into a matrix of average HSV values
@@ -95,18 +95,31 @@ reference_image = cv2.imread(reference_path)
 
     # Convert the image to grayscale (required for edge detection).
 gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+cv2.imshow("Gray image", gray_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
     # Apply Canny edge detection to the image with the specified thresholds.
 edges = cv2.Canny(gray_image, threshold1=340, threshold2=800)
+cv2.imshow("Edges image", edges)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
     # Find contours in the edge-detected image.
     # Contours are the boundaries of a shape with the same intensity.
 contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Find the largest contour (the frame).
+    # Create a copy of the original image to draw the contours on and display it.
+    # -1 means draw all contours, (0, 255, 0) is the color, and 2 is the thickness
+image_with_contours = image.copy()
+cv2.drawContours(image_with_contours, contours, -1, (0, 255, 0), 2)
+cv2.imshow("Image with contours", image_with_contours)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
 if contours:
 
-        # Find the largest contour (the frame).
+        # Find the largest contour.
     largest_contour = max(contours, key=cv2.contourArea)
 
         # Draw the largest contour on the image.
@@ -132,48 +145,15 @@ if contours:
         # https://docs.opencv.org/4.x/da/d54/group__imgproc__transform.html#gaf73673a7e8e18ec6963e3774e6a94b87
     rectified_image = cv2.warpPerspective(image, transformation_matrix, (w, h))
 
-        # Rotate the rectified image to make it horizontal.
-    if angle < -45:
-        angle += 90
-    rotated_rectified_image = cv2.warpAffine(rectified_image, cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1), (w, h))
-
 else:
     print("No contour found")
 
-    # Initialize the threshold for white regions.
-white_threshold = 180
+    # Display the cropped painting.
+cv2.imshow("Cropped Painting", rectified_image)
 
-    # Threshold the image to remove white regions.
-thresholded_image = cv2.inRange(rotated_rectified_image, (white_threshold, white_threshold, white_threshold), (255, 255, 255))
+    # Wait for a key press and then close the window.
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
-    # Invert the thresholded image (so white regions become black and vice versa).
-thresholded_image = cv2.bitwise_not(thresholded_image)
 
-    # Apply the thresholded mask to the rotated rectified image.
-removed_white = cv2.bitwise_and(rotated_rectified_image, rotated_rectified_image, mask=thresholded_image)
 
-    # Convert the "removed_white" image to grayscale.
-gray_removed_white = cv2.cvtColor(removed_white, cv2.COLOR_BGR2GRAY)
-
-    # Find contours in the grayscale image.
-contours, _ = cv2.findContours(gray_removed_white, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Find the largest contour.
-if contours:
-        # Find the largest contour (the frame).
-    largest_contour = max(contours, key=cv2.contourArea)
-
-        # Get the bounding box of the largest contour.
-    x, y, w, h = cv2.boundingRect(largest_contour)
-
-        # Crop the painting from the "removed_white" image
-    cropped_painting = removed_white[y:y+h, x:x+w]
-
-        # Display the cropped painting
-    cv2.imshow("Cropped Painting", cropped_painting)
-
-    # Wait for a key press and then close the window
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-else:
-    print("No contour found")
