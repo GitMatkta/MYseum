@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-irl_path = r"100 Billeder cirka\Almond Blossoms 1.jpg"
+irl_path = r"100 Billeder cirka\Babel 7.jpg"
 
 reference_folder = r"Malerier"
 
@@ -140,16 +140,14 @@ def match_hsv(image, reference_folder):
         # Print the best match using the filename of the input image and the filename of the best match, and percentage.
     if best_match:
         print(f"///")
-
         print(
-            f"{os.path.basename(irl_path)} has the highest similarity to {best_match} with {highest_similarity_percentage:.2f}%")
+            f"\"{os.path.basename(irl_path)}\" has the highest similarity to \"{best_match}\" with {highest_similarity_percentage:.2f}%")
     else:
         print(f"Error: No match found for {os.path.basename(image)}")
 
-    # Call find_painting_in_image() on the input image (irl_path).
-
 # ///////////////////////////////////////
 
+    # Call find_painting_in_image() on the input image (irl_path).
 image = find_painting_in_image(irl_path)
 
     # Call match_hsv() on the image (returned from find_painting_in_image()) and the reference folder (reference_folder).
