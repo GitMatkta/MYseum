@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-irl_path = r"100 Billeder cirka\Babel 7.jpg"
+irl_path = r"100 Billeder cirka\Starry Night 5.jpg"
 
 reference_folder = r"Malerier"
 
@@ -148,6 +148,7 @@ def match_hsv(image, reference_folder):
 # ///////////////////////////////////////
 
     # Call find_painting_in_image() on the input image (irl_path).
+
 image = find_painting_in_image(irl_path)
 
     # Call match_hsv() on the image (returned from find_painting_in_image()) and the reference folder (reference_folder).
