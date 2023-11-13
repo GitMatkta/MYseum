@@ -6,6 +6,7 @@ irl_path = r"100 Billeder cirka\Monet Bridge 8.jpg"
 
 reference_folder = r"Malerier"
 
+    # Function for finding the painting in the input image.
 def find_painting_in_image(image_path):
 
     image = cv2.imread(image_path)
@@ -29,23 +30,24 @@ def find_painting_in_image(image_path):
         # Find the contour in the binary mask with the largest area and draw it in blue on the original image.
     contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     largest_contour = max(contours, key=cv2.contourArea)
+    cv2.drawContours(image, [largest_contour], 0, (255, 0, 0), 2)
 
-    # Approximate the contour with a polygon.
-    epsilon = 0.02 * cv2.arcLength(largest_contour, True)
-    approx_corners = cv2.approxPolyDP(largest_contour, epsilon, True)
+        # Extract the largest contour from the original color image by cropping the bounding rectangle.
+    x, y, w, h = cv2.boundingRect(largest_contour)
+    cropped_object = image[y:y + h, x:x + w]
 
-        # Draw the rectangle using the four corners.
-    if len(approx_corners) == 4:
-        cv2.drawContours(image, [approx_corners], 0, (0, 255, 0), 2)
+        # Calculate the average color of the object and print it in BGR and RGB format.
+    average_color = np.mean(cropped_object, axis=(0, 1))
+    average_color_rgb = average_color[::-1]
+    print(f'Average Color: B={average_color[0]}, G={average_color[1]}, R={average_color[2]}')
+    print(f'Average Color (RGB): R={average_color_rgb[0]}, G={average_color_rgb[1]}, B={average_color_rgb[2]}')
 
-        x, y, w, h = cv2.boundingRect(largest_contour)
-        cropped_object = image[y:y + h, x:x + w]
+        # Return the cropped object.
+    return cropped_object
 
-        return cropped_object
-    else:
-        print("The largest contour does not have four corners.")
-        return None
+    # Function for splitting the image into a matrix of HSV values.
 
+    # Function to split the image into a matrix of cells with average HSV values.
 def split_image_into_matrix(image, rows=10, cols=10):
 
         # Check for invalid input image.
@@ -85,6 +87,7 @@ def split_image_into_matrix(image, rows=10, cols=10):
         # Return the hsv_values list.
     return hsv_values
 
+    # Function for matching the HSV values of the input image with the HSV values of the reference images.
 def match_hsv(image, reference_folder):
 
         # Get the HSV values of the input image using split_image_into_matrix().
