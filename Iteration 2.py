@@ -2,6 +2,11 @@ import cv2
 import numpy as np
 import os
 
+# Improved contour detection by thresholding away the white background and identifying the white pixels.
+# Then finding the coordinates of the furthest white pixels and drawing a rectangle around them.
+# This is done by finding the minimum and maximum coordinates of the white pixels and using them as the bottom left.
+# Changed HSV matching to RGB matching.
+
 irl_path = r"100 Billeder cirka\Mrefer"
 
 reference_folder = r"Malerier"
