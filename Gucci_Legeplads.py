@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-irl_path = r"100 Billeder cirka\Mrefer"
+irl_folder = r"100 Billeder cirka"
 
 reference_folder = r"Malerier"
 
@@ -125,15 +125,26 @@ def match_rgb(image, reference_folder):
         cv2.putText(image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         print(f"///")
         print(
-            f"\"{os.path.basename(irl_path)}\" has the highest similarity to \"{best_match}\" with {highest_similarity_percentage:.2f}%")
+            f"\"{os.path.basename(image_path)}\" has the highest similarity to \"{best_match}\" with {highest_similarity_percentage:.2f}%")
+        print(f"///")
+
     else:
         print(f"Error: No match found for {os.path.basename(image)}")
 
-image = find_painting_in_image(irl_path)
+# Get a list of all image files in the input folder
+image_files = [os.path.join(irl_folder, filename) for filename in os.listdir(irl_folder) if filename.endswith(('.png', '.jpg', '.jpeg'))]
 
-match_rgb(image, reference_folder)
+# Iterate over each image in the folder
+for image_path in image_files:
+    # Find the painting in the current image
+    image = find_painting_in_image(image_path)
 
-    # Show the image in a window.
-cv2.imshow("Image", image)
-cv2.waitKey(0)
+    # Match the RGB values and find the best match
+    match_rgb(image, reference_folder)
+
+    # Show the image in a window
+    cv2.imshow("Image", image)
+    cv2.waitKey(0)
+
+# Close all windows when the processing is done
 cv2.destroyAllWindows()
