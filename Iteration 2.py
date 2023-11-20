@@ -18,6 +18,7 @@ import os
 input_folder = r"100 Billeder cirka"
 reference_folder = r"Malerier"
 
+
 def find_painting_in_image(image_path):
 
         # Initialize the image variable using cv2.imread().
@@ -97,8 +98,9 @@ def split_image_into_matrix(image, rows=10, cols=10):
             # Return the rgb_values list.
         return rgb_values
 def match_rgb(image, reference_folder):
+    global imageNumber
 
-        # Get the RGB values of the input image using split_image_into_matrix().
+    # Get the RGB values of the input image using split_image_into_matrix().
     rgb_values1 = split_image_into_matrix(image)
 
         # Use the os module to get the reference images from the reference folder.
@@ -157,6 +159,29 @@ def match_rgb(image, reference_folder):
             f"\"{os.path.basename(image_path)}\" has the highest similarity to \"{best_match}\" with {highest_similarity_percentage:.2f}%")
         print(f"///")
 
+
+        if best_match == os.path.basename(r"Malerier/Almond Blossoms.jpg"):
+            imageNumber = 0
+        if best_match == os.path.basename(r"Malerier/Cafe Terrace at Night.jpg"):
+            imageNumber = 1
+        if best_match == os.path.basename(r"Malerier/Girl_with_a_Pearl_Earring.jpg"):
+            imageNumber = 2
+        if best_match == os.path.basename(r"Malerier/Impression, Sunrise - Claude Monet.jpg"):
+            imageNumber = 3
+        if best_match == os.path.basename(r"Malerier/Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg.jpg"):
+            imageNumber = 4
+        if best_match == os.path.basename(r"Malerier/Monet Bridge over pond of water lilies.jpg"):
+            imageNumber = 5
+        if best_match == os.path.basename(r"Malerier/Starry Night - Van_Gogh.jpg"):
+            imageNumber = 6
+        if best_match == os.path.basename(r"Malerier/Tower of Babel.jpg"):
+            imageNumber = 7
+        if best_match == os.path.basename(r"Malerier/Wanderer_above_the_sea_of_fog - Caspar_David_Friedrich_.jpg"):
+            imageNumber = 8
+        if best_match == os.path.basename(r"Malerier/Almond Blossoms.jpg"):
+            imageNumber = 9
+
+
     else:
             # Print an error message if no match is found (should be impossible though).
         print(f"Error: No match found for {os.path.basename(image)}")
@@ -175,5 +200,6 @@ for image_path in image_files:
 
         # Show the image in a window, and wait for a keypress, then close the window.
     cv2.imshow("Image", image)
+    print(imageNumber)
     cv2.waitKey(0)
 cv2.destroyAllWindows()
