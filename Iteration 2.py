@@ -4,141 +4,181 @@ import os
 
 # Improved contour detection by thresholding away the white background and identifying the white pixels.
 # Then finding the coordinates of the furthest white pixels and drawing a rectangle around them.
-# This is done by finding the minimum and maximum coordinates of the white pixels and using them as the bottom left.
+# This is done by finding the minimum and maximum coordinates of the white pixels.
 # Changed HSV matching to RGB matching.
 
-irl_path = r"100 Billeder cirka\Mrefer"
+# Restraints:
+# All input images in the input folder must be the same size.
+# All input images must be taken by the same mobile device.
+# The input images must be taken in the same lighting conditions.
+# The input images must be taken at the same distance from the painting.
+# The input images must be taken at a maximum angle of approximately 45 degrees from the painting.
 
+    # Initialize the paths to the input folder and the reference folder.
+input_folder = r"100 Billeder cirka"
 reference_folder = r"Malerier"
 
 def find_painting_in_image(image_path):
 
-        # Load the image using cv2.imread().
+        # Initialize the image variable using cv2.imread().
     image = cv2.imread(image_path)
 
-        # Check for invalid input image (failsafe for cv2.imread()
-    if image is None:
-        print(f"Error: Could not open or find the image at {image_path}")
-        return None
-
-        # Convert the image variable into HSV (hue, saturation, value) color spave.
+        # Use cvtColor() to convert the image into HSV (hue, saturation, value) color space for easier color detection.
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        # Define the lower and upper HSV values. lower_color HSV values are 50 to threshold for the white in the image.
+        # Define the lower and upper HSV values.
+        # The lower_color HSV values are 50 to threshold for the white background (restraint) in the image.
     lower_color = np.array([50, 50, 50])
     upper_color = np.array([255, 255, 255])
 
         # Create a binary mask for thresholding the image using the previously defined lower and upper HSV values.
     color_mask = cv2.inRange(hsv, lower_color, upper_color)
 
-        # Finds the coordinates of all white pixels (>0) in the binary mask and adds them to a list (numpy array).
-        # This uses np.column_stack() to stack the coordinates in a 2D array and np.where() to find the coordinates.
+        # Use where() to find the coordinates of all white pixels (>0).
+        # Use column_stack() to stack the coordinates in a 2D array.
+        # Store the coordinates in a numpy array called white_pixel_coordinates.
     white_pixel_coordinates = np.column_stack(np.where(color_mask > 0))
 
-        # Define the bottom left and top right coordinates of the painting in the image using np.min() and np.max().
+        # Define the bottom left and top right coordinates of the painting in the image using min() and max().
     bottom_left = np.min(white_pixel_coordinates, axis=0)
     top_right = np.max(white_pixel_coordinates, axis=0)
 
-        # Create a region of interest in the image using the previously defined coordinates.
+        # Define a region of interest (roi) using the previously defined coordinates.
     roi = image[bottom_left[0]:top_right[0], bottom_left[1]:top_right[1]]
 
         # Draw a green rectangle around the region of interest.
         # The rectangle is drawn using cv2.rectangle() and the coordinates are reversed using [::-1].
+        # The coordinates are reversed because cv2.rectangle() takes the coordinates in the format (x, y).
+        # The coordinates are stored in the format (y, x) in the numpy array.
     cv2.rectangle(image, tuple(bottom_left[::-1]), tuple(top_right[::-1]), (0, 255, 0), 2)
 
-        # Return the region of interest.
+        # Return the region of interest (roi).
     return roi
 
 def split_image_into_matrix(image, rows=10, cols=10):
 
-        # Check for invalid input image.
-        if image is None:
-            print("Error: Could not open or find the image.")
-            return None
-
-            # Resize the image to a size divisible by rows and cols.
+            # Define a height and width variable for the image using shape().
         height, width, _ = image.shape
+
+            # Define the height and width of each cell in the image.
+            # Calculate cell size by dividing height and width by the number of rows and columns.
         cell_height = height // rows
         cell_width = width // cols
+
+            # Resize the image to a size divisible by rows and cols using resize().
+            # Resizing is done in order to make the image easier to split into a grid.
         image = cv2.resize(image, (cell_width * cols, cell_height * rows))
 
-        # Initialize a list for storing the HSV values.
-        hsv_values = []
+            # Initialize a list for storing the RGB values.
+        rgb_values = []
 
+            # Iterate through the rows and columns in the image.
         for i in range(rows):
 
-            # Initialize a list for storing the HSV values in the current row.
+                # Initialize a list for storing the RGB values in the current row.
             row_values = []
 
+                # Iterate through the columns in the current row.
             for j in range(cols):
-                # Extract a cell from the image by slicing the image with cell_height and cell_width.
+
+                    # Extract a cell from the image by slicing the image with cell_height and cell_width.
+                    # This uses the slicing syntax [start:stop].
+                    # The syntax includes the start value and excludes the stop value.
                 cell = image[i * cell_height:(i + 1) * cell_height, j * cell_width:(j + 1) * cell_width]
 
-                # Convert the color image to the HSV.
-                hsv_cell = cv2.cvtColor(cell, cv2.COLOR_BGR2HSV)
+                #Convert to hsv for hsv matching instead if better.
+                    #hsv_cell = cv2.cvtColor(cell, cv2.COLOR_BGR2HSV)
+                    #average_hsv = np.mean(hsv_cell, axis=(0, 1))
+                    #row_values.append(average_hsv)
+                #rgb_values.append(row_values)
 
-                # Calculate the average HSV values and add them to the row_values list.
-                average_hsv = np.mean(hsv_cell, axis=(0, 1))
-                row_values.append(average_hsv)
+                    # Use mean() to calculate the average RGB values and add them to the row_values list.
+                average_rgb = np.mean(cell, axis=(0, 1))
+                row_values.append(average_rgb)
 
-                # Add the row_values list to the hsv_values list.
-            hsv_values.append(row_values)
+                # Add the row_values list to the rgb_values list.
+            rgb_values.append(row_values)
 
-            # Return the hsv_values list.
-        return hsv_values
+            # Return the rgb_values list.
+        return rgb_values
 
 def match_rgb(image, reference_folder):
-    # Get the RGB values of the input image using split_image_into_matrix().
+
+        # Get the RGB values of the input image using split_image_into_matrix().
     rgb_values1 = split_image_into_matrix(image)
 
-    # Get the reference images from the reference folder using os module.
+        # Use the os module to get the reference images from the reference folder.
+        # This is done by iterating through the files in the reference folder using os.listdir()
+        # and using os.path.join() to join the folder path with the filename.
     reference_images = [os.path.join(reference_folder, filename) for filename in os.listdir(reference_folder)]
 
-    # Initialize variables for storing the highest similarity percentage and the best match.
+        # Initialize variables for storing the highest similarity percentage and the best match filename.
     highest_similarity_percentage = 0
     best_match = ""
 
-    # Iterate over the images in the list.
+        # Iterate over the images in the reference_images list.
     for reference_image_path in reference_images:
-        # Get the RGB values of the reference image using split_image_into_matrix().
+
+            # Get the RGB values of the reference image using split_image_into_matrix().
         rgb_values2 = split_image_into_matrix(cv2.imread(reference_image_path))
 
         if rgb_values1 and rgb_values2:
-            # Flatten the matrices for normalized cross-correlation (NCC) calculation.
+
+                # Flatten the matrices for normalized cross-correlation (NCC) calculation.
+                # Flattening a matrix means converting a 2D matrix into a 1D array.
+                # This is done to make the matrix compatible with the NCC formula.
+                # NCC documentation: https://docs.opencv.org/3.4/d4/dc6/tutorial_py_template_matching.html
             flat_rgb_values1 = np.array(rgb_values1).flatten()
             flat_rgb_values2 = np.array(rgb_values2).flatten()
 
-            # Calculate Normalized Cross-Correlation (NCC).
+                # Perform NCC calculation using the formula from the documentation.
             ncc = np.sum(flat_rgb_values1 * flat_rgb_values2) / (
                     np.sqrt(np.sum(flat_rgb_values1 ** 2) * np.sum(flat_rgb_values2 ** 2)))
 
-            # Calculate the percentage of similarity of the two images.
+                # Calculate the percentage of similarity of the two images.
             similarity_percentage = (ncc + 1) * 50
 
+                # Print the similarity percentage between the two images.
             print(f"Similarity between the two images ({reference_image_path}): {similarity_percentage:.2f}%")
 
-            # Update the highest similarity percentage and the best match.
+                # If the similarity percentage is higher than the highest_similarity_percentage,
             if similarity_percentage > highest_similarity_percentage:
+
+                    # Update the highest_similarity_percentage and the best match.
                 highest_similarity_percentage = similarity_percentage
                 best_match = os.path.basename(reference_image_path)
         else:
+                # Print an error message if an error occurs during image processing.
             print(f"Error occurred during image processing for reference image: {reference_image_path}")
 
-    # Print the best match using the filename of the input image and the filename of the best match, and percentage.
     if best_match:
+
+            # If a match is found, print the best match using the filename of the input image and the filename of the best match, and percentage.
         text = f"Best Match: {best_match} ({highest_similarity_percentage:.2f}%)"
+
+            # Draw the text on the image using cv2.putText().
         cv2.putText(image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         print(f"///")
         print(
-            f"\"{os.path.basename(irl_path)}\" has the highest similarity to \"{best_match}\" with {highest_similarity_percentage:.2f}%")
+            f"\"{os.path.basename(image_path)}\" has the highest similarity to \"{best_match}\" with {highest_similarity_percentage:.2f}%")
+        print(f"///")
+
     else:
+            # Print an error message if no match is found.
         print(f"Error: No match found for {os.path.basename(image)}")
 
-image = find_painting_in_image(irl_path)
+image_files = [os.path.join(input_folder, filename) for filename in os.listdir(input_folder) if filename.endswith(('.png', '.jpg', '.jpeg'))]
 
-match_rgb(image, reference_folder)
+    # Iterate over the image files.
+for image_path in image_files:
 
-    # Show the image in a window.
-cv2.imshow("Image", image)
-cv2.waitKey(0)
+        # Find the painting in the image using find_painting_in_image().
+    image = find_painting_in_image(image_path)
+
+        # Match the painting in the image to the reference images using match_rgb().
+    match_rgb(image, reference_folder)
+
+        # Show the image in a window.
+    cv2.imshow("Image", image)
+    cv2.waitKey(0)
 cv2.destroyAllWindows()
