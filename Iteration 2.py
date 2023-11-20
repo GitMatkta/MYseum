@@ -48,13 +48,12 @@ def find_painting_in_image(image_path):
 
         # Draw a green rectangle around the region of interest.
         # The rectangle is drawn using cv2.rectangle() and the coordinates are reversed using [::-1].
-        # The coordinates are reversed because cv2.rectangle() takes the coordinates in the format (x, y).
-        # The coordinates are stored in the format (y, x) in the numpy array.
+        # The coordinates are reversed because cv2.rectangle() takes the coordinates in the format (x, y),
+        # while the coordinates are stored in the format (y, x) in the numpy array.
     cv2.rectangle(image, tuple(bottom_left[::-1]), tuple(top_right[::-1]), (0, 255, 0), 2)
 
         # Return the region of interest (roi).
     return roi
-
 def split_image_into_matrix(image, rows=10, cols=10):
 
             # Define a height and width variable for the image using shape().
@@ -86,22 +85,17 @@ def split_image_into_matrix(image, rows=10, cols=10):
                     # The syntax includes the start value and excludes the stop value.
                 cell = image[i * cell_height:(i + 1) * cell_height, j * cell_width:(j + 1) * cell_width]
 
-                #Convert to hsv for hsv matching instead if better.
-                    #hsv_cell = cv2.cvtColor(cell, cv2.COLOR_BGR2HSV)
-                    #average_hsv = np.mean(hsv_cell, axis=(0, 1))
-                    #row_values.append(average_hsv)
-                #rgb_values.append(row_values)
-
                     # Use mean() to calculate the average RGB values and add them to the row_values list.
                 average_rgb = np.mean(cell, axis=(0, 1))
+
+                    # Append the average RGB values to the row_values list.
                 row_values.append(average_rgb)
 
-                # Add the row_values list to the rgb_values list.
+                # Append the row_values list to the rgb_values list.
             rgb_values.append(row_values)
 
             # Return the rgb_values list.
         return rgb_values
-
 def match_rgb(image, reference_folder):
 
         # Get the RGB values of the input image using split_image_into_matrix().
@@ -164,9 +158,10 @@ def match_rgb(image, reference_folder):
         print(f"///")
 
     else:
-            # Print an error message if no match is found.
+            # Print an error message if no match is found (should be impossible though).
         print(f"Error: No match found for {os.path.basename(image)}")
 
+    # Use the os module to get the image files from the input folder.
 image_files = [os.path.join(input_folder, filename) for filename in os.listdir(input_folder) if filename.endswith(('.png', '.jpg', '.jpeg'))]
 
     # Iterate over the image files.
@@ -178,7 +173,7 @@ for image_path in image_files:
         # Match the painting in the image to the reference images using match_rgb().
     match_rgb(image, reference_folder)
 
-        # Show the image in a window.
+        # Show the image in a window, and wait for a keypress, then close the window.
     cv2.imshow("Image", image)
     cv2.waitKey(0)
 cv2.destroyAllWindows()
