@@ -128,6 +128,8 @@ def match_rgb(image, reference_folder):
             flat_rgb_values2 = np.array(rgb_values2).flatten()
 
                 # Perform NCC calculation using the formula from the documentation.
+                # The result of the NCC calculation is typically between -1 and 1.
+                # By adding 1 and multiplying by 50, the result is converted to a percentage between 0 and 100.
             ncc = np.sum(flat_rgb_values1 * flat_rgb_values2) / (
                     np.sqrt(np.sum(flat_rgb_values1 ** 2) * np.sum(flat_rgb_values2 ** 2)))
 

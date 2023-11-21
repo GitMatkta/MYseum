@@ -112,6 +112,8 @@ def match_hsv(image, reference_folder):
             mean_hsv_values2 = np.mean(flat_hsv_values2)
 
                 # Perform NCC calculation using the formula from the documentation.
+                # The result of the NCC calculation is typically between -1 and 1.
+                # By adding 1 and multiplying by 50, the result is converted to a percentage between 0 and 100.
             ncc = np.sum((flat_hsv_values1 - mean_hsv_values1) * (flat_hsv_values2 - mean_hsv_values2)) / \
                   (np.sqrt(np.sum((flat_hsv_values1 - mean_hsv_values1) ** 2) * np.sum((flat_hsv_values2 - mean_hsv_values2) ** 2)))
 
