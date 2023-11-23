@@ -28,28 +28,21 @@ def find_painting_in_image(image_path):
 def split_image_into_matrix(image, rows=10, cols=10):
 
     height, width, _ = image.shape
-
     cell_height = height // rows
     cell_width = width // cols
-
     image = cv2.resize(image, (cell_width * cols, cell_height * rows))
 
     hsv_values = []
-
     for i in range(rows):
 
         row_values = []
-
         for j in range(cols):
 
             cell = image[i * cell_height:(i + 1) * cell_height, j * cell_width:(j + 1) * cell_width]
-
             hsv_cell = cv2.cvtColor(cell, cv2.COLOR_BGR2HSV)
-
             average_hsv = np.mean(hsv_cell, axis=(0, 1))
 
             row_values.append(average_hsv)
-
         hsv_values.append(row_values)
 
     return hsv_values
