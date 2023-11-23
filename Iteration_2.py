@@ -18,6 +18,8 @@ import os
 input_folder = r"100 Billeder cirka"
 reference_folder = r"Malerier"
 
+# Initialize the imageNumber variable at the module level.
+imageNumber = None
 
 def find_painting_in_image(image_path):
 
@@ -180,7 +182,7 @@ def match_rgb(image, reference_folder):
             imageNumber = 7
         if best_match == os.path.basename(r"Malerier/Wanderer_above_the_sea_of_fog - Caspar_David_Friedrich_.jpg"):
             imageNumber = 8
-        if best_match == os.path.basename(r"Malerier/Almond Blossoms.jpg"):
+        if best_match == os.path.basename(r"Malerier/Woman_with_a_Parasol_-_Madame_Monet_and_Her_Son - Claude_Monet.jpg"):
             imageNumber = 9
 
 
