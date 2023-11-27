@@ -58,31 +58,24 @@ def match_hsv(image, reference_folder):
     for reference_image_path in reference_images:
 
         hsv_values2 = split_image_into_matrix(cv2.imread(reference_image_path))
-
         if hsv_values1 and hsv_values2:
 
             flat_hsv_values1 = np.array(hsv_values1).flatten()
             flat_hsv_values2 = np.array(hsv_values2).flatten()
-
             mean_hsv_values1 = np.mean(flat_hsv_values1)
             mean_hsv_values2 = np.mean(flat_hsv_values2)
 
             ncc = np.sum((flat_hsv_values1 - mean_hsv_values1) * (flat_hsv_values2 - mean_hsv_values2)) / \
                   (np.sqrt(np.sum((flat_hsv_values1 - mean_hsv_values1) ** 2) * np.sum((flat_hsv_values2 - mean_hsv_values2) ** 2)))
-
             similarity_percentage = (ncc + 1) * 50
 
             print(f"Similarity between the two images ({reference_image_path}): {similarity_percentage:.2f}%")
-
             if similarity_percentage > highest_similarity_percentage:
-
                 highest_similarity_percentage = similarity_percentage
                 best_match = os.path.basename(reference_image_path)
         else:
             print(f"Error occurred during image processing for reference image: {reference_image_path}")
-
     if best_match:
-
         print(f"///")
         print(
             f"\"{os.path.basename(image_path)}\" has the highest similarity to \"{best_match}\" with {highest_similarity_percentage:.2f}%")
