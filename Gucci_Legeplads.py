@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import os
 
-    # Initialize the paths to the input folder and the reference folder.
 input_folder = r"100 Billeder cirka"
 reference_folder = r"Malerier"
 
@@ -92,3 +91,6 @@ for image_path in image_files:
         cv2.imshow("Image", image)
         cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+
+
