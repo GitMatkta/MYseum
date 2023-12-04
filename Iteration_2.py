@@ -15,7 +15,7 @@ import os
 # The input images must be taken at a maximum angle of approximately 45 degrees from the painting.
 
     # Initialize the paths to the input folder and the reference folder.
-input_folder = r"Test1Billede"
+input_folder = r"Test 1 Images"
 reference_folder = r"Malerier"
 
 # Initialize the imageNumber variable at the module level.
