@@ -31,7 +31,7 @@ def find_painting_in_image(image_path):
 
         # Define the lower and upper HSV values.
         # The lower_color HSV values are 50 to threshold for the white background (restraint) in the image.
-    lower_color = np.array([60, 60, 60])
+    lower_color = np.array([50, 50, 50])
     upper_color = np.array([255, 255, 255])
 
         # Create a binary mask for thresholding the image using the previously defined lower and upper HSV values.
