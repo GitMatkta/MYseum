@@ -1,7 +1,7 @@
 import socket
 import struct
 import time
-from Iteration_2 import imageNumber  # Assuming Iteration2.py is in the same directory
+from Iteration_2 import imageNumber
 
 def start_client():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,11 +20,6 @@ def start_client():
             if current_image_number != last_sent_value:
                 # Send the current value of imageNumber to the server in the form of an integer
                 client.send(struct.pack('!I', current_image_number))  # Convert integer to bytes
-
-                # Receive the response from the server
-                #response_message = client.recv(4)  # Assuming messages are 4 bytes (int size)
-                #response_data = struct.unpack('!I', response_message)[0]  # Convert bytes to integer
-                #print(f"Received response from Unity: {response_data}")
 
                 # Update the last sent value
                 last_sent_value = current_image_number
