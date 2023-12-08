@@ -74,61 +74,35 @@ def split_image_into_matrix(image, rows=10, cols=10):
 def match_rgb(image, reference_folder):
     global imageNumber
 
-    # Get the RGB values of the input image using split_image_into_matrix().
     rgb_values1 = split_image_into_matrix(image)
 
-        # Use the os module to get the reference images from the reference folder.
-        # This is done by iterating through the files in the reference folder using os.listdir()
-        # and using os.path.join() to join the folder path with the filename.
     reference_images = [os.path.join(reference_folder, filename) for filename in os.listdir(reference_folder)]
 
-        # Initialize variables for storing the highest similarity percentage and the best match filename.
     highest_similarity_percentage = 0
     best_match = ""
 
-        # Iterate over the images in the reference_images list.
     for reference_image_path in reference_images:
 
-            # Get the RGB values of the reference image using split_image_into_matrix().
         rgb_values2 = split_image_into_matrix(cv2.imread(reference_image_path))
 
         if rgb_values1 and rgb_values2:
 
-                # Flatten the matrices for normalized cross-correlation (NCC) calculation.
-                # Flattening a matrix means converting a 2D matrix into a 1D array.
-                # This is done to make the matrix compatible with the NCC formula.
-                # NCC documentation: https://docs.opencv.org/3.4/d4/dc6/tutorial_py_template_matching.html
             flat_rgb_values1 = np.array(rgb_values1).flatten()
             flat_rgb_values2 = np.array(rgb_values2).flatten()
 
-                # Perform NCC calculation using the formula from the documentation.
-                # The result of the NCC calculation is typically between -1 and 1.
-                # By adding 1 and multiplying by 50, the result is converted to a percentage between 0 and 100.
             ncc = np.sum(flat_rgb_values1 * flat_rgb_values2) / (
                     np.sqrt(np.sum(flat_rgb_values1 ** 2) * np.sum(flat_rgb_values2 ** 2)))
 
-                # Calculate the percentage of similarity of the two images.
             similarity_percentage = (ncc + 1) * 50
 
-                # Print the similarity percentage between the two images.
             print(f"Similarity between the two images ({reference_image_path}): {similarity_percentage:.2f}%")
-
-                # If the similarity percentage is higher than the highest_similarity_percentage,
             if similarity_percentage > highest_similarity_percentage:
-
-                    # Update the highest_similarity_percentage and the best match.
                 highest_similarity_percentage = similarity_percentage
                 best_match = os.path.basename(reference_image_path)
         else:
-                # Print an error message if an error occurs during image processing.
             print(f"Error occurred during image processing for reference image: {reference_image_path}")
-
     if best_match:
-
-            # If a match is found, print the best match using the filename of the input image and the filename of the best match, and percentage.
         text = f"Best Match: {best_match} ({highest_similarity_percentage:.2f}%)"
-
-            # Draw the text on the image using cv2.putText().
         cv2.putText(image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         print(f"///")
         print(
